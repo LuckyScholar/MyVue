@@ -9,12 +9,34 @@
     <div id="app">hello</div>
     <script src="/dist/umd/vue.js"></script>
     <script>
+        // mixin 混入 全局混入 局部混入
+        Vue.mixin({
+            created:function a(){
+                console.log('created---a');
+            }
+        })
+        Vue.mixin({
+            created:[
+                function b(){
+                    console.log('created---b');
+                },
+                function c(){
+                    console.log('created---c');
+                }
+            ]
+        })
+
+        // options API 通过一个选项进行配置
         let vm = new Vue({
             el:'#app', // 渲染那个节点
             data(){
                 return {name:'jw'}
             },
             template:`<div id="app"><p>hello {{name}}</p> hello</div>`,
+            created(){  //生命周期就是回调函数 先订阅好后续会触发此方法
+                console.log('my created');
+            }
+            // [created1,created2]
         })
         // console.log('Vue',Vue);
     </script>
