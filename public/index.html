@@ -1,49 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <div id="app">hello</div>
-    <script src="/dist/umd/vue.js"></script>
-    <script>
-        // mixin 混入 全局混入 局部混入
-        Vue.mixin({
-            created:function a(){
-                console.log('created---a');
-            }
-        })
-        Vue.mixin({
-            created:[
-                function b(){
-                    console.log('created---b');
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+    </head>
+    <body>
+        <div id="app">hello</div>
+        <script src="/dist/umd/vue.js"></script>
+        <script>
+            // mixin 混入 全局混入 局部混入
+            Vue.mixin({
+                created: function a() {
+                    console.log("created---a")
                 },
-                function c(){
-                    console.log('created---c');
-                }
-            ]
-        })
+            })
+            Vue.mixin({
+                created: [
+                    function b() {
+                        console.log("created---b")
+                    },
+                    function c() {
+                        console.log("created---c")
+                    },
+                ],
+            })
 
-        // options API 通过一个选项进行配置
-        let vm = new Vue({
-            el:'#app', // 渲染那个节点
-            data(){
-                return {name:'jw'}
-            },
-            template:`<div id="app"><p>hello {{name}}</p> hello</div>`,
-            created(){  //生命周期就是回调函数 先订阅好后续会触发此方法
-                console.log('my created');
-            }
-            // [created1,created2]
-        })
-        // console.log('Vue',Vue);
-    </script>
-    <!-- vue两种模式 full with compiler
+            // options API 通过一个选项进行配置
+            let vm = new Vue({
+                el: "#app", // 渲染那个节点
+                data() {
+                    return {
+                        school: {
+                            name: "jw",
+                            age: 10,
+                        },
+                    }
+                },
+                template: `<div id="app"><p>hello {{school.name}}</p> hello</div>`,
+                created() {
+                    //生命周期就是回调函数 先订阅好后续会触发此方法
+                    console.log("my created")
+                },
+                // [created1,created2]
+            })
+
+            setTimeout(() => {
+                vm.school.name = "hahaha"
+            }, 2000)
+        </script>
+        <!-- vue两种模式 full with compiler
          vue另一种模式 是不带compiler  runtime
     -->
-    <!-- <div id="app">
+        <!-- <div id="app">
         {{ name }}
     </div>
     <script src="node_modules/vue/dist/vue.js"></script> 
@@ -66,5 +75,5 @@
             // }
         });
     </script> -->
-</body>
+    </body>
 </html>
