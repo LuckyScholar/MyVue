@@ -6,7 +6,13 @@
         <title>Document</title>
     </head>
     <body>
-        <div id="app">hello</div>
+        <!-- 如果当前取值是引用类型 就会调用JSON.Stringfy() 把对象转为字符串 转为字符串的时候就会进行取值操作 相当于取了a这个对象里面的time值 取值触发依赖收集 改值触发依赖更新-->
+        <div id="app" style="color: red">
+            <li style="color: blue">{{a}}</li>
+            <li>{{school.name}}</li>
+            <li>{{arr}}</li>
+        </div>
+
         <script src="/dist/umd/vue.js"></script>
         <script>
             // mixin 混入 全局混入 局部混入
@@ -35,9 +41,13 @@
                             name: "jw",
                             age: 10,
                         },
+                        a:{
+                            time:10
+                        },
+                        arr:[{b:1},2,3]
                     }
                 },
-                template: `<div id="app"><p>hello {{school.name}}</p> hello</div>`,
+                // template: `<div id="app"><p>hello {{school.name}}</p> hello</div>`,
                 created() {
                     //生命周期就是回调函数 先订阅好后续会触发此方法
                     console.log("my created")
@@ -46,20 +56,26 @@
             })
 
             setTimeout(() => {
+                // 双向绑定 数据变化页面渲染
                 vm.school.name = "hahaha"
+                // 修改引用类型对象的值 页面上只渲染这个对象并没有渲染这个对象具体的键值 也是会触发更新的 因为进行了JSON.Stringfy()
+                vm.a.time = 20
+                // 改数组 数组的第一项是对象 引用类型 会触发更新
+                vm.arr[0].b = 4
+                // 改数组的第二项 不会触发更新  注意：通过数组更新索引和长度是无效更新的 调用["push", "shift", "unshift", "pop", "sort", "splice", "reverse"]这7个方法才会触发更新
+                // vm.arr[1] = 5
             }, 2000)
         </script>
-        <!-- vue两种模式 full with compiler
-         vue另一种模式 是不带compiler  runtime
-    -->
-        <!-- <div id="app">
+
+    <!-- vue两种模式 full with compiler vue另一种模式 是不带compiler  runtime-->
+
+    <!-- <div id="app">
         {{ name }}
     </div>
-    <script src="node_modules/vue/dist/vue.js"></script> 
+    <script src="/node_modules/vue/dist/vue.js"></script> 
     
     <script>
-        // viewModel
-
+        // 页面需要有个#app的节点 用来挂载dom
         // 1.渲染采用模板的顺序
         // 2.默认会先查找用户传入的render函数
         // 3.如果没有render 查找template

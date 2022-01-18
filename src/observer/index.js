@@ -5,8 +5,11 @@ import { isObject, def } from "../util/index"
 import { arrayMethods } from './array'
 import Dep from "./dep";
 
+// 后续我可以根据__ob__知道它是不是一个已经观察了的数据 
 class Observer {
     constructor(value) {  // 仅仅是初始化的操作
+
+        this.dep = new Dep(); //value={} || value=[] 如果value是对象或数组话在它最外层 整个添加一个dep 
         // vue如果数据的层次过多 需要递归的去解析对象中的属性，依次增加set和get方法
         // value.__ob__ = this; // 我给每一个监控过的对象都增加一个__ob__属性 给所有响应式数据增加__ob__标识，并且可以在响应式上获取`Observer`实例上的方法
         def(value, '__ob__', this);
@@ -43,8 +46,9 @@ function defineReactive(data, key, value) {
     let dep = new Dep(); //每个属性都有一个dep
     // 当页面取值时说明这个值用来渲染了 将这个watcher和这个属性对应起来
     Object.defineProperty(data, key, {
+        // 页面渲染或者代码使用到相关属性 都会走get方法 取值
         get() { //依赖收集
-            if (Dep.targrt) {
+            if (Dep.target) {
                 dep.depend();   //让这个属性记住这个watcher
             }
             return value
