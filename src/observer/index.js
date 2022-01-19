@@ -58,19 +58,19 @@ function defineReactive(data, key, value) {
         get() { //依赖收集
             if (Dep.target) {
                 dep.depend();   //让这个属性记住这个watcher
-                if(childOb){    // 最外层对象或数组的依赖收集 如let arr:[{b:1},2,3] arr对应的这个dep 当对这个对象取值时
+                if (childOb) {    // 最外层对象或数组的依赖收集 如let arr:[{b:1},2,3] arr对应的这个dep 当对这个对象取值时
                     childOb.dep.depend(); // 收集了最外层对象或数组的相关依赖 将watcher存起来
                 }
             }
             return value
         },
         set(newValue) { //依赖更新
-            console.log('更新数据')
+            // console.log('更新数据')
             if (newValue === value) return
             // 继续劫持用户设置的值，因为有可能用户设置的值是一个对象
             observe(newValue)
             value = newValue
-            console.log('数据更新为', newValue);
+            // console.log('数据更新为', newValue);
 
             dep.notify(); //异步更新 防止频繁操作
         }

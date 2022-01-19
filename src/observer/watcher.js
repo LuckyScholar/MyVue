@@ -18,16 +18,16 @@ class Watcher {
         this.depId = new Set(); //对页面上重复取值的属性的dep做去重 如页面上多次调用{{msg}}对应的watcher应该只保存一个dep而不是存进多个相同的dep
         this.get()  //当new Watcher的时候就会执行这个方法 
     }
-    addDep(dep){    // watcher 里不能放重复的dep  dep里不能放重复的watcher
+    addDep(dep) {    // watcher 里不能放重复的dep  dep里不能放重复的watcher
         let id = dep.id
         // 不是同一个dep就存起来 去重
-        if(!this.depId.has(id)){
+        if (!this.depId.has(id)) {
             this.deps.push(dep)
             this.depId.add(id)
             // dep依赖收集 将对应的watcher存起来
             dep.addSub(this)
         }
-        
+
     }
     get() {
         pushTarget(this);   // this是当前watcher实例 把watcher存起来  Dep.target = this
@@ -44,7 +44,7 @@ class Watcher {
         queueWatcher(this);    //暂存的概念 等待着 一起来更新 因为每次调用update的时候 都放入了watcher
         // this.get(); //重新渲染
     }
-    run(){
+    run() {
         this.get();
     }
 }
@@ -54,7 +54,7 @@ let has = {} // 这里用对象进行去重
 let pending = false //false表示运行状态 true为等待状态(等待watcher进队列)
 
 // 刷新队列 即清空队列
-function flushScheduleQueue(){
+function flushScheduleQueue() {
     queue.forEach(watcher => {
         watcher.run();
         watcher.cb();
@@ -64,14 +64,14 @@ function flushScheduleQueue(){
     pending = false // 重置为运行状态
 }
 
-function queueWatcher(watcher){
+function queueWatcher(watcher) {
     let id = watcher.id //对watcher进行去重
-    if(has[id] == null){
+    if (has[id] == null) {
         queue.push(watcher) //并且将id不同的watcher存进队列
         has[id] = true
         // 等待所有同步代码执行完毕后再执行  
-        if(!pending){   // pending为true等待状态不会走以下逻辑 表示还没清空队列 就不要再开定时器了 防抖处理 
-            // 异步代码 先调用默认的页面渲染再调用用户自定义传进来的回调函数
+        if (!pending) {   // pending为true等待状态不会走以下逻辑 表示还没清空队列 就不要再开定时器了 防抖处理 
+            // 异步代码 先调用默认的页面渲染再调用用户自定义传进来的nextTick回调函数
             nextTick(flushScheduleQueue)
             // 置为等待状态
             pending = true

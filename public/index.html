@@ -45,10 +45,10 @@
                             name: "jw",
                             age: 10,
                         },
-                        a:{
-                            time:10
+                        a: {
+                            time: 10,
                         },
-                        arr:[{b:1},2,3]
+                        arr: [{ b: 1 }, 2, 3],
                     }
                 },
                 // template: `<div id="app"><p>hello {{school.name}}</p> hello</div>`,
@@ -56,9 +56,9 @@
                     //生命周期就是回调函数 先订阅好后续会触发此方法
                     console.log("my created")
                 },
-                updated(){
-                    console.log('updated');
-                }
+                updated() {
+                    console.log("updated")
+                },
                 // [created1,created2]
             })
 
@@ -79,16 +79,16 @@
                 vm.arr.push(8)
                 vm.arr.push(8)
                 vm.arr.push(8)
-                console.log(vm.$el.innerHTML,'1111');
-                vm.$nextTick(()=>{
-                    console.log(vm.$el.innerHTML,'22222');
+                console.log(vm.$el.innerHTML, "1111")
+                vm.$nextTick(() => {
+                    console.log(vm.$el.innerHTML, "22222")
                 })
             }, 2000)
         </script>
 
-    <!-- vue两种模式 full with compiler vue另一种模式 是不带compiler  runtime-->
+        <!-- vue两种模式 full with compiler vue另一种模式 是不带compiler  runtime-->
 
-    <!-- <div id="app">
+        <!-- <div id="app">
         {{ name }}
     </div>
     <script src="/node_modules/vue/dist/vue.js"></script> 

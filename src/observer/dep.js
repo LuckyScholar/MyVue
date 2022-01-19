@@ -1,4 +1,4 @@
-let id =0;
+let id = 0;
 class Dep {
     constructor() {
         this.subs = [];
@@ -11,14 +11,14 @@ class Dep {
 
         // this.subs.push(Dep.target)
     }
-    addSub(watcher){
+    addSub(watcher) {
         this.subs.push(watcher)
     }
     notify() {
         this.subs.forEach(watcher => watcher.update())
     }
 }
-Dep.target = null; //静态属性 就一分
+Dep.target = null; //静态属性 就一份
 
 export function pushTarget(watcher) {
     Dep.target = watcher; //保留watcher

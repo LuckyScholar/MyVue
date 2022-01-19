@@ -28,7 +28,7 @@ methods.forEach(method => {
         }
         if (inserted) ob.observerArray(inserted) // 将新增属性继续观测
         // 如果用户调用了 如push方法 当前Observer类的实例上有dep属性 我会通知当前这个dep去更新 
-        ob.dep.notify(); 
+        ob.dep.notify();
         return result
     }
 })
