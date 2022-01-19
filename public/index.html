@@ -7,6 +7,10 @@
     </head>
     <body>
         <!-- 如果当前取值是引用类型 就会调用JSON.Stringfy() 把对象转为字符串 转为字符串的时候就会进行取值操作 相当于取了a这个对象里面的time值 取值触发依赖收集 改值触发依赖更新-->
+        <!-- 1.我取arr的值 会调用Object.defineProperty里的get方法 希望让当前数组记住这个渲染watcher
+        2.给所有的对象类型都添加一个dep属性
+        3.当页面对arr取值时 我就让数组的dep记住这个watcher
+        4.等会我更新数组时 调用push shift方法时找到数组对应的watcher来更新 -->
         <div id="app" style="color: red">
             <li style="color: blue">{{a}}</li>
             <li>{{school.name}}</li>
@@ -52,11 +56,14 @@
                     //生命周期就是回调函数 先订阅好后续会触发此方法
                     console.log("my created")
                 },
+                updated(){
+                    console.log('updated');
+                }
                 // [created1,created2]
             })
 
             setTimeout(() => {
-                // 双向绑定 数据变化页面渲染
+                // 双向绑定 数据变化页面渲染 更新数据调watcher的update方法
                 vm.school.name = "hahaha"
                 // 修改引用类型对象的值 页面上只渲染这个对象并没有渲染这个对象具体的键值 也是会触发更新的 因为进行了JSON.Stringfy()
                 vm.a.time = 20
@@ -64,6 +71,18 @@
                 vm.arr[0].b = 4
                 // 改数组的第二项 不会触发更新  注意：通过数组更新索引和长度是无效更新的 调用["push", "shift", "unshift", "pop", "sort", "splice", "reverse"]这7个方法才会触发更新
                 // vm.arr[1] = 5
+                // 调用数组 7个方法触发更新
+                vm.arr.push(8)
+                // 批处理 将多次重复渲染变成一次渲染 vue异步更新 更新数据后不能立刻拿到最新的节点
+                // nextTick 等待页面更新好后再获取最终dom
+                vm.arr.push(8)
+                vm.arr.push(8)
+                vm.arr.push(8)
+                vm.arr.push(8)
+                console.log(vm.$el.innerHTML,'1111');
+                vm.$nextTick(()=>{
+                    console.log(vm.$el.innerHTML,'22222');
+                })
             }, 2000)
         </script>
 

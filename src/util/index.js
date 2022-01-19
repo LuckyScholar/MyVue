@@ -103,3 +103,50 @@ export function mergeOptions(parent,child){
     }
     return options
 }
+
+const callbacks = []
+let pending = false
+function flushCallbacks(){
+    // 方法一
+    // callbacks.forEach(cb=>cb()) //让nextTick中传入的方法依次执行
+    // callbacks=[]
+
+    //方法二
+    while(callbacks.length){
+        //让nextTick中传入的方法依次执行
+        let cb = callbacks.pop()
+        cb();
+    }
+    pending = false //标识已经执行完毕
+}
+// 异步方法
+let timeFunc;
+// 兼容处理异步方法
+if(Promise){
+    timeFunc = ()=>{
+        Promise.resolve().then(flushCallbacks); // 异步处理更新
+    }
+}else if(MutationObserver){ //可以监测dom变化 dom变化后是异步更新
+    let observe = new MutationObserver(flushCallbacks)
+    let textNode = document.createTextNode(1)   //先创建一个文本节点
+    observe.observe(textNode,{characterData:true})  //监测文本节点中的内容
+    timeFunc = ()=>{
+        textNode.textContent =2 //文本的内容改为2
+    }
+}else if(setImmediate){
+    timeFunc = ()=>{
+        setImmediate(flushCallbacks)
+    }
+}
+
+
+// 多次调用nextTick 只会批处理执行一次nextTick
+export function nextTick(cb){   // 因为内部会调用nextTick触发依赖更新 用户也会调用自定义的nextTick 但是异步只需要一次
+    callbacks.push(cb)
+    // pending为true等待状态不会走以下逻辑 表示还没清空队列 就不要再开定时器了 防抖处理
+    if(!pending){
+        // Vue3里的nextTick原理就是Promise.then() 没有做兼容处理了
+        timeFunc()  // 这个方法是异步方法 做了兼容处理
+        pending = true
+    }
+}

@@ -14,6 +14,7 @@ methods.forEach(method => {
         const result = oldArrayMethods[method].apply(this, args) // 调用原生的数组方法
         // push unshift 添加的元素可能还是一个对象
         let inserted // 当前用户插入的元素
+        // def(value, '__ob__', this) this.__ob__的值是Observer类的实例 可以调用它里面对应的的方法
         let ob = this.__ob__
         switch (method) {
             case "push":
@@ -26,7 +27,8 @@ methods.forEach(method => {
                 break
         }
         if (inserted) ob.observerArray(inserted) // 将新增属性继续观测
-
+        // 如果用户调用了 如push方法 当前Observer类的实例上有dep属性 我会通知当前这个dep去更新 
+        ob.dep.notify(); 
         return result
     }
 })

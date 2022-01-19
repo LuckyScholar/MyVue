@@ -1,3 +1,4 @@
+import { nextTick } from '../util/index'
 import { pushTarget, popTarget } from './dep'
 
 let id = 0
@@ -17,7 +18,7 @@ class Watcher {
         this.depId = new Set(); //对页面上重复取值的属性的dep做去重 如页面上多次调用{{msg}}对应的watcher应该只保存一个dep而不是存进多个相同的dep
         this.get()  //当new Watcher的时候就会执行这个方法 
     }
-    addDep(dep){
+    addDep(dep){    // watcher 里不能放重复的dep  dep里不能放重复的watcher
         let id = dep.id
         // 不是同一个dep就存起来 去重
         if(!this.depId.has(id)){
@@ -39,7 +40,42 @@ class Watcher {
         popTarget();    // 移除watcher Dep.target = null 
     }
     update() {
-        this.get(); //重新渲染
+        // 这里不要每次都调用get方法 get方法会出现渲染页面
+        queueWatcher(this);    //暂存的概念 等待着 一起来更新 因为每次调用update的时候 都放入了watcher
+        // this.get(); //重新渲染
+    }
+    run(){
+        this.get();
+    }
+}
+
+let queue = []  // 将需要批量更新的watcher 存到一个队列里 稍后让watcher执行
+let has = {} // 这里用对象进行去重
+let pending = false //false表示运行状态 true为等待状态(等待watcher进队列)
+
+// 刷新队列 即清空队列
+function flushScheduleQueue(){
+    queue.forEach(watcher => {
+        watcher.run();
+        watcher.cb();
+    })
+    queue = []  // 清空watcher队列为了下次使用
+    has = {}    //  清空标识的id
+    pending = false // 重置为运行状态
+}
+
+function queueWatcher(watcher){
+    let id = watcher.id //对watcher进行去重
+    if(has[id] == null){
+        queue.push(watcher) //并且将id不同的watcher存进队列
+        has[id] = true
+        // 等待所有同步代码执行完毕后再执行  
+        if(!pending){   // pending为true等待状态不会走以下逻辑 表示还没清空队列 就不要再开定时器了 防抖处理 
+            // 异步代码 先调用默认的页面渲染再调用用户自定义传进来的回调函数
+            nextTick(flushScheduleQueue)
+            // 置为等待状态
+            pending = true
+        }
     }
 }
 export default Watcher
@@ -50,3 +86,6 @@ export default Watcher
 // 2.开始渲染 取值会调用get方法 需要让这个属性的dep 存储当前的watcher
 // 3.页面上所有需要渲染的属性都会将这个watcher存在自己的dep中 其他不需要渲染在页面上的属性就不会在自己的dep中存储这个watcher
 // 4.等会属性更新了 就重新调用渲染逻辑 通知自己存储的watcher来更新 就是重新调用get方法
+
+// 在模板中取值时 会进行依赖收集 在更改数据是会进行 对应的watcher调用更新操作
+// dep 和 watcher 是一个多对多的关系  dep里存放着相关的watcher 是一个观察者模式

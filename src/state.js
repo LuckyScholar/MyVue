@@ -1,5 +1,5 @@
 import { observe } from "./observer/index.js"
-import { proxy } from "./util/index"
+import { proxy, nextTick } from "./util/index"
 
 export function initState(vm) {
     const opt = vm.$options
@@ -43,3 +43,10 @@ function initData(vm) {
 }
 function initComputed() {}
 function initWatch() {}
+
+export function stateMixin(Vue){
+    // 在Vue的原型上挂载$nextTick方法
+    Vue.prototype.$nextTick = function(cb){
+        nextTick(cb);
+    }
+}

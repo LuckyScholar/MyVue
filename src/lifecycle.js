@@ -33,7 +33,7 @@ export function mountComponent(vm, el) {
 
     // 渲染watcher 每个组件都有一个watcher   
     new Watcher(vm, updateComponent, () => {
-        callHook(vm, 'beforeUpdate');
+        callHook(vm, 'updated');
     }, true); // true表示他是一个渲染watcher
 
     // 挂载后执行mounted钩子
