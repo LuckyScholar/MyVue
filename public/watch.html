@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <!-- Vue的 -->
+    <!-- <script src="/node_modules/vue/dist/vue.js"></script> -->
+    <!-- 自己的Vue -->
+    <script src="/dist/umd/vue.js"></script>
+    <div id="app">
+        {{a}}
+    </div>
+    <script>
+        let vm = new Vue({
+            el:"#app",
+            data:{
+                a:1
+            },
+            methods:{
+                aa(){
+                    console.log('1000');
+                }
+            },
+            watch:{
+                // watch三种写法
+                // 1.直接key vale
+                // 'a'(newVal,oldVal){
+                //     console.log('newVal',newVal);
+                // }
+                // 2.写成key和数组的方式
+                // 'a':[
+                //     (newVal,oldVal) =>{
+                //         console.log('newVal',newVal);
+                //     }
+                // ]
+                // 3.监控当前实例上的方法 方法要加引号
+                // 'a':'aa'
+                // 4.key 对象的写法 handler写法
+                'a': {
+                    handler(newVal, oldVal) {
+                        console.log('newVal',newVal);
+                    }
+                }
+            }
+        })
+        vm.a = 100
+        // console.log(vm); // 在_watchers属性中查找所有的watcher
+    </script>
+</body>
+</html>

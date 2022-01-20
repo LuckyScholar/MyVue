@@ -568,11 +568,11 @@ export function renderMixin(Vue){
 ```js
 let id = 0;
 class Watcher {
-    constructor(vm, exprOrFn, cb, options) {
+    constructor(vm, expOrFn, cb, options) {
         this.vm = vm;
-        this.exprOrFn = exprOrFn;
-        if (typeof exprOrFn == 'function') {
-            this.getter = exprOrFn;
+        this.expOrFn = expOrFn;
+        if (typeof expOrFn == 'function') {
+            this.getter = expOrFn;
         }
         this.cb = cb;
         this.options = options;

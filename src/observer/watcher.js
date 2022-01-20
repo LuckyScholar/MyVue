@@ -4,18 +4,25 @@ import { pushTarget, popTarget } from './dep'
 let id = 0
 class Watcher {
     // vm 实例
-    // exprOrFn =>  vm._update(vm._render())
-    constructor(vm, exprOrFn, cb, options) {
+    // expOrFn =>  vm._update(vm._render())
+    constructor(vm, expOrFn, cb, options={}) {
         this.vm = vm
-        this.exprOrFn = exprOrFn
-        if (typeof exprOrFn === "function") {
-            this.getter = exprOrFn  // 将内部传过来的回调函数 放到getter属性上
-        }
+        this.expOrFn = expOrFn
         this.cb = cb
         this.options = options
+        this.user = options.user // 标识是否用户watcher
+        this.isWatcher = !!options  //判断是否是渲染watcher 默认是渲染watcher !!{} 为true
         this.id = id++  //watcher的唯一标识
         this.deps = []; //watcher记录有多少dep依赖它 
         this.depId = new Set(); //对页面上重复取值的属性的dep做去重 如页面上多次调用{{msg}}对应的watcher应该只保存一个dep而不是存进多个相同的dep
+        if (typeof expOrFn === "function") {
+            this.getter = expOrFn  // 将内部传过来的回调函数 放到getter属性上
+        }else{
+            this.getter = function(){   // expOrFn传递过来的可能是个字符串如 'a.a.a.a'
+                // 只有去当前实例上取值时 才会触发依赖收集
+                let path = expOrFn.split('.')
+            } 
+        }
         this.get()  //当new Watcher的时候就会执行这个方法 
     }
     addDep(dep) {    // watcher 里不能放重复的dep  dep里不能放重复的watcher

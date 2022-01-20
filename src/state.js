@@ -1,4 +1,5 @@
 import { observe } from "./observer/index.js"
+import Watcher from "./observer/watcher.js"
 import { proxy, nextTick } from "./util/index"
 
 export function initState(vm) {
@@ -42,11 +43,73 @@ function initData(vm) {
     observe(data)
 }
 function initComputed() {}
-function initWatch() {}
+function initWatch(vm) {
+    let watch = vm.$options.watch   //watch是个对象
+    for(let key in watch){
+        const handler = watch[key]  //handler可能是数组 字符串 对象 函数
+        // 是数组
+        if(Array.isArray(handler)){
+            handler.forEach(handle =>{
+                createWatcher(vm,key,handle)
+            })
+        }else{
+            // 字符串 对象 函数情况
+            createWatcher(vm,key,handler)
+        }
+    }
+}
+// options是用户传过来的选项
+// 如
+// {
+//     deep: true, //深层次遍历监测
+//     immediate: true //立即以表达式expOrFn的当前值触发回调
+// }
+function createWatcher(vm,expOrFn,handler,options){
+    if(typeof handler == 'object'){
+        // 例如handler为 'a': {
+        //     handler(newVal, oldVal) {
+        //         console.log('newVal',newVal);
+        //     }
+        // }
+        options = handler
+        handler = handler.handler   
+    }
+    if(typeof handler == 'string'){
+        // 例如handler为'a':'aa' 'aa'是函数名
+        handler = vm[handler]   //将实例的方法作为handler
+    }
+    return vm.$watch(expOrFn,handler,options)
+}
 
 export function stateMixin(Vue){
     // 在Vue的原型上挂载$nextTick方法
     Vue.prototype.$nextTick = function(cb){
         nextTick(cb);
     }
+
+    // expOrFn表示字符串或者函数  
+    // 如vm.$watch('a.b.c', function (newVal, oldVal) {
+    //     // 做点什么
+    // })
+    // vm.$watch(
+    //     function () {
+    //       // 表达式 `this.a + this.b` 每次得出一个不同的结果时
+    //       // 处理函数都会被调用。
+    //       // 这就像监听一个未被定义的计算属性
+    //       return this.a + this.b
+    //     },
+    //     function (newVal, oldVal) {
+    //       // 做点什么
+    //     }
+    // )
+    Vue.prototype.$watch = function(expOrFn,cb,options){
+        // console.log(expOrFn,handler,options);
+        new Watcher(vm,expOrFn,cb,options)
+        // 如果是immediate应该立即执行
+        if(options.immediate){
+            cb()
+        }
+    }
 }
+
+
