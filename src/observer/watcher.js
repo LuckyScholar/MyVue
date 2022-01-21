@@ -10,20 +10,29 @@ class Watcher {
         this.expOrFn = expOrFn
         this.cb = cb
         this.options = options
-        this.user = options.user // 标识是否用户watcher
-        this.isWatcher = !!options  //判断是否是渲染watcher 默认是渲染watcher !!{} 为true
+        this.user = options.user // 标识是否是用户watcher   默认是渲染watcher
         this.id = id++  //watcher的唯一标识
         this.deps = []; //watcher记录有多少dep依赖它 
         this.depId = new Set(); //对页面上重复取值的属性的dep做去重 如页面上多次调用{{msg}}对应的watcher应该只保存一个dep而不是存进多个相同的dep
         if (typeof expOrFn === "function") {
             this.getter = expOrFn  // 将内部传过来的回调函数 放到getter属性上
         }else{
-            this.getter = function(){   // expOrFn传递过来的可能是个字符串如 'a.a.a.a'
+            this.getter = function(){   // expOrFn传递过来的可能是个字符串如 'a.a.a'
                 // 只有去当前实例上取值时 才会触发依赖收集
-                let path = expOrFn.split('.')
+                let path = expOrFn.split('.') //['a','a','a']
+                let obj = vm
+                for(let i =0; i<path.length; ++i){     // vm上 有 a:{ a:{ a:1 } }这个对象 想要监听'a.a.a'值的变化 vm.a.a.a
+                    // 第一次从vm上取a这个属性的值并让obj变成vm.a对应的值  此时obj= {a:{a:1}}
+                    // 第二次从obj上继续取它a这个属性的值并让obj变成obj.a对应的值 此时obj= {a:1}
+                    // 第三次从obj上继续取它a这个属性的值并让obj变成obj.a对应的值 此时obj= 1 
+                    // 获取到最终的结果把它保存起来 进行监测
+                    obj = obj[path[i]]  
+                }
+                return obj
             } 
         }
-        this.get()  //当new Watcher的时候就会执行这个方法 
+        // 默认会调用一次get方法进行取值 将结果保留起来 这是oldValue
+        this.value = this.get()  //当new Watcher的时候就会执行这个方法  默认会调用get()方法
     }
     addDep(dep) {    // watcher 里不能放重复的dep  dep里不能放重复的watcher
         let id = dep.id
@@ -40,11 +49,12 @@ class Watcher {
         pushTarget(this);   // this是当前watcher实例 把watcher存起来  Dep.target = this
 
         // 调用this.getter()时会触发对应属性的取值 如触发vm.msg属性取它对应的值 会走Object.defineProperty里msg的get()方法 进行依赖收集 此时Dep.target有值就会在dep里把对应的watcher收集起来
-        this.getter();   //调用exprOrFn 也就是执行vm._update(vm._render())  渲染页面 render方法 类似with(vm){_v(msg)}
+        let result = this.getter();   //调用exprOrFn 也就是执行vm._update(vm._render())  渲染页面 render方法 类似with(vm){_v(msg)}
 
         // 为什么需要移除watcher 因为有些属性没有在页面上渲染 不需要收集当前的watcher 如页面上没有{{msg}}但在代码里调用vm.msg时会走Object.defineProperty里msg的get()方法 此时的Dep.target没有值 就不会收集这个watcher msg没有依赖watcher 
         // 更改msg的值后页面不会重新渲染因为msg本身就不在渲染页面上  如果不移除watcher 当msg取值时会走Object.defineProperty里msg的get()方法 此时的Dep.target有值 会收集这个watcher 一旦msg的值发生改变就会触发依赖更新 重新渲染页面 造成不必要的渲染 msg本身就不需要在页面上渲染
         popTarget();    // 移除watcher Dep.target = null 
+        return result
     }
     update() {
         // 这里不要每次都调用get方法 get方法会出现渲染页面
@@ -52,7 +62,12 @@ class Watcher {
         // this.get(); //重新渲染
     }
     run() {
-        this.get();
+        let newValue = this.get();  //新值
+        let oldValue = this.value   //老值
+        this.value = newValue   //更新当前的值
+        if(this.user){  // 如果是用户watcher
+            this.cb.call(this.vm,newValue,oldValue)
+        }
     }
 }
 
@@ -64,7 +79,10 @@ let pending = false //false表示运行状态 true为等待状态(等待watcher�
 function flushScheduleQueue() {
     queue.forEach(watcher => {
         watcher.run();
-        watcher.cb();
+        // 如果是渲染watcher才能执行cb重新渲染页面 如果是用户watcher它会走更新逻辑而不是默认渲染逻辑
+        if(!watcher.user){
+            watcher.cb();
+        }
     })
     queue = []  // 清空watcher队列为了下次使用
     has = {}    //  清空标识的id

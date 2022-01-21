@@ -103,8 +103,8 @@ export function stateMixin(Vue){
     //     }
     // )
     Vue.prototype.$watch = function(expOrFn,cb,options){
-        // console.log(expOrFn,handler,options);
-        new Watcher(vm,expOrFn,cb,options)
+        // 数据应该依赖这个watcher 数据变化后应该让watcher重新执行 这里的options做个合并并标记是用户watcher
+        let watcher = new Watcher(this,expOrFn,cb,{...options, user:true})
         // 如果是immediate应该立即执行
         if(options.immediate){
             cb()

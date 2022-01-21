@@ -18,7 +18,11 @@
         let vm = new Vue({
             el:"#app",
             data:{
-                a:1
+                a:{
+                    a:{
+                        a:1
+                    }
+                }
             },
             methods:{
                 aa(){
@@ -40,14 +44,18 @@
                 // 3.监控当前实例上的方法 方法要加引号
                 // 'a':'aa'
                 // 4.key 对象的写法 handler写法
-                'a': {
+                'a.a.a': {
                     handler(newVal, oldVal) {
-                        console.log('newVal',newVal);
+                        console.log(newVal, oldVal);
+                        // console.log('ok');
                     }
                 }
             }
         })
-        vm.a = 100
+        vm.a.a.a = 100  //改变一次值 对应的用户自定义的watcher就触发更新
+        setTimeout(() => {
+            vm.a.a.a = 200  //一秒后 对应的用户自定义的watcher就触发更新 总共改变2次取值
+        }, 1000);
         // console.log(vm); // 在_watchers属性中查找所有的watcher
     </script>
 </body>

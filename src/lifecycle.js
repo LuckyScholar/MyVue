@@ -4,7 +4,7 @@ import { patch } from './vdom/patch'
 export function lifecycleMixin(Vue) {
     Vue.prototype._update = function (vnode) {
         const vm = this;
-        vm.$el = patch(vm.$el, vnode); // 需要用虚拟节点创建出真实节点 替换掉 真实的$el
+        vm.$el = patch(vm.$el, vnode); // 需要用虚拟节点创建出真实节点 替换掉 vm.$el上真实的节点
 
         // 我要通过虚拟节点 渲染出真实的dom
 
@@ -27,7 +27,7 @@ export function mountComponent(vm, el) {
     // vue更新策略是以组件为单位的 给每个组件都添加了一个watcher 属性变化后会重新调用这个watcher(渲染watcher)
     let updateComponent = () => { // 无论是 渲染还是更新 都会调用此方法
         //重新调用_render再调用_update
-        // 返回的是虚拟dom  vm._render()就是虚拟dom vnode   vm._update用虚拟节点创建出真实节点 替换掉 真实的$el
+        // 返回的是虚拟dom  vm._render()就是生成虚拟dom vnode   vm._update用虚拟节点创建出真实节点 替换掉 真实的$el
         vm._update(vm._render());
     }
 

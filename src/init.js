@@ -17,7 +17,7 @@ export function initMixin(Vue) {
         // 如果是子类来调_init就是vm.constructor就是子类的构造函数 但它不一定是Vue  不过子类会继承父类 vm.constructor.options还是全局的options
         // new Vue子组件要合并mixin里的属性 子要继承父
         vm.$options = mergeOptions(vm.constructor.options, options);
-        console.log('vm.$options', vm.$options);
+        // console.log('vm.$options', vm.$options);
 
         // 初始化流程中调用生命周期
         // 实例创建前执行beforeCreate钩子
