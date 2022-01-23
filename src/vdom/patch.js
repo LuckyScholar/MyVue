@@ -130,9 +130,42 @@ function updateChildren(oldChildren, newChildren, parent) {
     // 但实际上不需要创建节点 只需要移动元素就好了
     // 移动的性能要比创建节点的性能高得多
 
+    // 先根据老节点的key 做一个映射表，拿新的虚拟节点去映射表中查找
+    // 如果可以查找到，则头指针移动到下一位  如果找不到则直接将元素插入到头指针的前面位置
+    const makeIndexByKey = (children) => {
+        let map = {}
+        children.forEach((item, index) => {
+            if (item.key) {
+                map[item.key] = index  // 根据key 创建一个映射表{A:0, B:1, C:2}
+            }
+        })
+        return map;
+    }
+    let map = makeIndexByKey(oldChildren);
+
+    // diff算法通过头头 尾尾 头尾 尾头双指针 以及标签和key判断是否是同一节点 
+    // 步骤一:是同一节点的话比较属性和递归比较儿子  然后头指针自加 尾指针自减 继续循环
+    // 步骤二:不是同一节点的话 进入暴力对比 先根据老节点的key 做一个映射表，拿新的虚拟节点去映射表中查找 有的话复用移动 无的话新增插入
+    // 复用移动老节点的后 将之前复用节点位置设为null 占位防止塌陷  头指针自加 尾指针自减
+    // 继续步骤一或者步骤二的判断 循环 直到老节点循环结束 或者 新节点循环结束
+
+
     // 循环老的和新的 哪个先结束 循环就停止 将多余的删除或者添加进去 &&两个都得true才能继续循环
     while (oldStartIndex <= oldEndIndex && newStartIndex <= newEndIndex) {
-        if (isSameVnode(oldStartVnode, newStartVnode)) { // 同一个元素 头头比较 方法一
+        if (!oldStartVnode) {
+            // 开头指针指向了null 需要跳过这次处理 因为当前节点是null没必要比较
+            // C E D M
+            // A D E Q F
+            // 新节点的A插入到老节点C的前面 然后新节点的D在老节点中有 则进行移动 将老节点的D移动到当前开始指针节点C的前面 并将老节点中的D置为null 
+            // 此时oldChildren变为 C E null M 但是oldChildren的parent变为 A D C E null M 也就是 A D C E M
+            // 更新开头节点 然后继续循环比较
+            oldStartVnode = oldChildren[++oldStartIndex]
+
+        } else if (!oldEndVnode) {
+            // 同理如果尾指针指向了null 也需要跳过这次处理 因为当前节点是null没必要比较 更新尾结点
+            oldEndVnode = oldChildren[--oldEndIndex]
+
+        } else if (isSameVnode(oldStartVnode, newStartVnode)) { // 同一个元素 头头比较 方法一
             patch(oldStartVnode, newStartVnode) // 更新改元素的属性和递归去更新子节点
             oldStartVnode = oldChildren[++oldStartIndex]
             newStartVnode = newChildren[++newStartIndex]
@@ -171,6 +204,37 @@ function updateChildren(oldChildren, newChildren, parent) {
             oldEndVnode = oldChildren[--oldEndIndex]
             // 更新新节点的头结点
             newStartVnode = [++newStartIndex]
+        } else {
+            // 暴力比对  乱序 方法五
+            // 根据老节点的key 结合数据的索引 做一个映射表
+            // <li key='A'>A</li>   
+            // <li key='B'>B</li>   
+            // <li key='C'>C</li>   
+            // <li >D</li>  
+            // 生成的映射表为 {A:0, B:1, C:2, undefined:3}
+
+            // 新节点
+            // <li key='B'>B</li>  
+            // <li key='E'>E</li>   
+            // <li key='C'>C</li>   
+            // <li key='D'>D</li>  
+            // <li key='F'>F</li>  
+            // 新节点的key B E C D F 在映射表中查找看是否有对应的key 
+            // 如都有B这个key就可以查到key为B的节点在老节点中索引为1  map[item.key]就是map[B] = 1
+            // 只需要移动老节点中key为B的节点就好了 不需要重新创建 根据索引找出对应的节点oldChildren[moveIndex] 移动到老节点当前开始节点的前面
+            // 新节点的key C D F 在映射表中没有 创建新节点插入到老节点的对应位置
+
+
+            let moveIndex = map[newStartVnode.key]  // 拿到开头的虚拟节点的key 去老的中找
+            if (moveIndex == undefined) { // 映射表中没有可以复用的key 新建并插入
+                parent.insertBefore(createElm(newStartVnode), oldStartVnode.el)
+            } else {
+                let moveVnode = oldChildren[moveIndex]  // 我要移动的那个元素
+                oldChildren[moveIndex] = undefined; // 占位防止塌陷
+                parent.insertBefore(moveVnode.el, oldStartVnode.el) // 需要移动的元素移动到老节点当前开始节点的前面
+                patch(moveVnode, oldStartVnode) // 比较属性和儿子
+            }
+            newStartVnode = newChildren[++newStartIndex] // 用新的节点不停的去老节点中找
         }
     }
     // 老的循环结束 剩下新的多余的节点 就是新增的节点
@@ -187,6 +251,16 @@ function updateChildren(oldChildren, newChildren, parent) {
             parent.insertBefore(createElm(newChildren[i]), el)
         }
     }
+    // 新的循环结束 剩下老的多余的节点 说明这些老节点是不需要的节点 如果这里面有null说明这个节点已经处理过了跳过即可
+    if (oldStartIndex <= oldEndIndex) {
+        for (let i = oldStartIndex; i <= oldEndIndex; ++i) {
+            let child = oldChildren[i]
+            if (child != undefined) {
+                parent.removeChild(child.el)    //删除不需要的多余的及元素
+            }
+        }
+    }
+
 }
 
 // 根据虚拟节点创建真实的节点
