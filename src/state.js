@@ -22,13 +22,13 @@ export function initState(vm) {
     }
 }
 
-function initProps() {}
-function initMethod() {}
+function initProps() { }
+function initMethod() { }
 
 // 数据初始化工作
 function initData(vm) {
     // 用户传递的data   
-    let data = vm.$options.data 
+    let data = vm.$options.data
     // 判断data是否是函数(函数可以保证组件复用的时候数据不会共用同一个引用) 是的话直接执行获取到返回值返回的是对象 不是函数的话就是对象  并将data定义在vm._data这个属性上 
     data = vm._data = typeof data === "function" ? data.call(vm) : data
     // 对象劫持 用户改变了数据 我希望可以得到通知 => 刷新页面
@@ -42,19 +42,43 @@ function initData(vm) {
     //观察数据 observe观察 observer观察者
     observe(data)
 }
-function initComputed() {}
+
+// 计算属性
+function initComputed(vm) {
+    let computed = vm.$options.computed
+    // 1.需要有watcher 2.还需要有definedProperty 3.dirty
+    // const watchers = vm._computedWatchers = {} // 用来存放计算属性的watcher
+    for (let key in computed) {
+        const useDef = computed[key] //取出对应的值来
+        // 获取get方法
+        // const getter = typeof useDef === 'function'? useDef : useDef.get; //watcher使用的
+        // definedReactive()
+        definedComputed(vm, key, useDef)
+    }
+}
+const sharePropertyDefinition = {}
+function definedComputed(target, key, useDef) {    //这样写是没有缓存的
+    // console.log(target, key, useDef)
+    if (typeof useDef === 'function') {
+        sharePropertyDefinition.get = useDef
+    } else {
+        sharePropertyDefinition.get = useDef.get    // 需要加缓存
+        sharePropertyDefinition.set = useDef.set
+    }
+    Object.defineProperty(target, key, sharePropertyDefinition)
+}
 function initWatch(vm) {
     let watch = vm.$options.watch   //watch是个对象
-    for(let key in watch){
+    for (let key in watch) {
         const handler = watch[key]  //handler可能是数组 字符串 对象 函数
         // 是数组
-        if(Array.isArray(handler)){
-            handler.forEach(handle =>{
-                createWatcher(vm,key,handle)
+        if (Array.isArray(handler)) {
+            handler.forEach(handle => {
+                createWatcher(vm, key, handle)
             })
-        }else{
+        } else {
             // 字符串 对象 函数情况
-            createWatcher(vm,key,handler)
+            createWatcher(vm, key, handler)
         }
     }
 }
@@ -64,26 +88,26 @@ function initWatch(vm) {
 //     deep: true, //深层次遍历监测
 //     immediate: true //立即以表达式expOrFn的当前值触发回调
 // }
-function createWatcher(vm,expOrFn,handler,options){
-    if(typeof handler == 'object'){
+function createWatcher(vm, expOrFn, handler, options) {
+    if (typeof handler == 'object') {
         // 例如handler为 'a': {
         //     handler(newVal, oldVal) {
         //         console.log('newVal',newVal);
         //     }
         // }
         options = handler
-        handler = handler.handler   
+        handler = handler.handler
     }
-    if(typeof handler == 'string'){
+    if (typeof handler == 'string') {
         // 例如handler为'a':'aa' 'aa'是函数名
         handler = vm[handler]   //将实例的方法作为handler
     }
-    return vm.$watch(expOrFn,handler,options)
+    return vm.$watch(expOrFn, handler, options)
 }
 
-export function stateMixin(Vue){
+export function stateMixin(Vue) {
     // 在Vue的原型上挂载$nextTick方法
-    Vue.prototype.$nextTick = function(cb){
+    Vue.prototype.$nextTick = function (cb) {
         nextTick(cb);
     }
 
@@ -102,11 +126,11 @@ export function stateMixin(Vue){
     //       // 做点什么
     //     }
     // )
-    Vue.prototype.$watch = function(expOrFn,cb,options){
+    Vue.prototype.$watch = function (expOrFn, cb, options) {
         // 数据应该依赖这个watcher 数据变化后应该让watcher重新执行 这里的options做个合并并标记是用户watcher
-        let watcher = new Watcher(this,expOrFn,cb,{...options, user:true})
+        let watcher = new Watcher(this, expOrFn, cb, { ...options, user: true })
         // 如果是immediate应该立即执行
-        if(options.immediate){
+        if (options.immediate) {
             cb()
         }
     }

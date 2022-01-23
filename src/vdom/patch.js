@@ -75,7 +75,7 @@ export function patch(oldVnode, vnode) {
 
             // 比较孩子
             let oldChildren = oldVnode.children || []
-            let newChildren = vnode.child || []
+            let newChildren = vnode.children || []
 
             if (oldChildren.length > 0 && newChildren.length > 0) {
                 // 老的有儿子 新的也有儿子 diff算法

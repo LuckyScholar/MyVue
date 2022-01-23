@@ -7,13 +7,25 @@
         <title>Document</title>
     </head>
     <body>
-        <div id="app"></div>
+        <div id="app">
+            <span>哈哈哈</span>
+            <p>{{name}}</p>
+        </div>
         <script src="/dist/umd/vue.js"></script>
         <script>
-            for (let key in app) {
-                // 把app这个dom节点上的属性打印出来 太多了 创建虚拟节点不需要这么多属性
-                console.log(key)
-            }
+            let vm = new Vue({
+                el: "#app",
+                data: {
+                    name: "小明",
+                },
+            })
+            setTimeout(() => {
+                vm.name = "小红"
+            }, 2000)
+            // for (let key in app) {
+            //     // 把app这个dom节点上的属性打印出来 太多了 创建虚拟节点不需要这么多属性
+            //     console.log(key)
+            // }
         </script>
     </body>
 </html>

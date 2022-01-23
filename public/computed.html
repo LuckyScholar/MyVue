@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+    </head>
+    <body>
+        <div id="app">
+            <span>哈哈哈</span>
+        </div>
+        <script src="/dist/umd/vue.js"></script>
+        <!-- <script src="/node_modules/vue/dist/vue.js"></script> -->
+        <script>
+            let vm = new Vue({
+                el: "#app",
+                data: {
+                    name: "小明",
+                    firstName: "张",
+                    lastName: "三",
+                },
+                computed: {
+                    // 会根据依赖的数据重新执行 内部也使用了definedProperty 内部有一个变量dirty
+                    // 依赖的数据发生变化  dirty 会变为true
+                    // computed 还是一个watcher 内部依赖的属性会收集这个watcher
+
+                    fullName() {
+                        // 代码没有调用vm.fullName取值 不会执行computed
+                        console.log("会执行吗？")
+                        return this.firstName + this.lastName
+                    },
+                    // 写法二
+                    // fullName:{
+                    //     get(){  // definedProperty中的get方法
+                    //         return this.name
+                    //     },
+                    //     set(){  // definedProperty中的set方法
+                    //         this.name = '小红'
+                    //     }
+                    // }
+                },
+            })
+            vm.fullName
+            vm.fullName // 多次取值vm.fullName 只会触发一次 依赖的数据没有发生变化
+
+            setTimeout(() => {
+                vm.firstName = "小红"
+                vm.fullName //依赖的数据发生变化了 再去取值会触发computed 不取值不会触发computed
+            }, 1000)
+        </script>
+    </body>
+</html>
