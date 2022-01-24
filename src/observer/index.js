@@ -22,7 +22,7 @@ class Observer {
         // value.__ob__ = this; // 我给每一个监控过的对象都增加一个__ob__属性 给所有响应式数据增加__ob__标识，并且可以在响应式上获取`Observer`实例上的方法
         def(value, '__ob__', this);
         if (Array.isArray(value)) {
-            // 如果是数组的话并不会对索引进行观测 因为会导致性能问题
+            // 如果是数组的话并不会对索引进行观测 如果对数组中的所有元素都用defineProperty来劫持，那么如果遇到成千上万个元素来劫持get和set，会出现性能爆炸的问题
             // 前端开发中很少很少 去操作索引 push shift unshift 
             value.__proto__ = arrayMethods;
             // 如果数组里放的是对象我再监控

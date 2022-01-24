@@ -9,6 +9,7 @@
     <body>
         <div id="app">
             <span>哈哈哈</span>
+            <p>{{fullName}}</p>
         </div>
         <script src="/dist/umd/vue.js"></script>
         <!-- <script src="/node_modules/vue/dist/vue.js"></script> -->
@@ -28,6 +29,7 @@
                     fullName() {
                         // 代码没有调用vm.fullName取值 不会执行computed
                         console.log("会执行吗？")
+                        // this.firstName 和 this.lastName在求值时 会记住当前计算属性的watcher
                         return this.firstName + this.lastName
                     },
                     // 写法二
