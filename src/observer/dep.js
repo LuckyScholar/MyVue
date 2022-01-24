@@ -33,8 +33,7 @@ let stack = []  //弄个栈存储对应的watcher
 
 // 如果页面需要渲染计算属性对应的值 通过渲染watcher渲染新数据 接着渲染watcher也出栈 最后栈为空
 
-export function pushTarget(watcher) {
-    debugger
+export function pushTarget(watcher) {   
     Dep.target = watcher; //保留watcher
     stack.push(watcher) //有渲染watcher 还有其他的watcher如计算属性watcher 第一个入栈的是渲染watcher然后才是其他的watcher
 }

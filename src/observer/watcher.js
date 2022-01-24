@@ -35,7 +35,6 @@ class Watcher { //渲染watcher 用户watcher 计算属性watcher
         }
         // 默认会调用一次get方法进行取值 将结果保留起来 这是oldValue
         // 如果是计算属性的话 默认不执行getter方法
-        debugger
         this.value = this.lazy? void 0 : this.get()  //当new Watcher的时候就会执行这个方法  默认会调用get()方法
     }
     addDep(dep) {    // watcher 里不能放重复的dep  dep里不能放重复的watcher
