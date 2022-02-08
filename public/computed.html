@@ -43,7 +43,7 @@
                     // }
                 },
             })
-            vm.fullName
+            vm.fullName // 页面上对fullName取值了触发一次 依赖的数据没有发生变化这里不会再触发
             vm.fullName // 多次取值vm.fullName 只会触发一次 依赖的数据没有发生变化
 
             setTimeout(() => {
