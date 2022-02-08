@@ -40,7 +40,6 @@ export function mountComponent(vm, el) {
         // 返回的是虚拟dom  vm._render()就是生成虚拟dom vnode   vm._update用虚拟节点创建出真实节点 替换掉 真实的$el
         vm._update(vm._render());
     }
-
     // 渲染watcher 每个组件都有一个watcher   
     new Watcher(vm, updateComponent, () => {
         callHook(vm, 'updated');
