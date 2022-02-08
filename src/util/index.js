@@ -37,6 +37,16 @@ const LIFECYCLE_HOOKS = [
 
 // 策略对象 里面的每个key对应的都是函数
 let strats = {}
+
+strats.components = function (parentVal, childVal) {
+    const res = Object.create(parentVal) // 等价于 res.__proto__ = parentVal
+    if (childVal) {
+        for (let key in childVal) {
+            res[key] = childVal[key]
+        }
+    }
+    return res
+}
 // strats.data = function(){
 
 // }
@@ -154,4 +164,14 @@ export function nextTick(cb) {   // 因为内部会调用nextTick触发依赖更
         timerFunc()  // 这个方法是异步方法 做了兼容处理
         pending = true
     }
+}
+
+export const isReservedTag = (tagName) => {
+    let str = 'a,div,img,image,text,span,p,button,input,ul,li,textarea';
+    const mapping = {}
+    str.split(',').forEach(tag => {
+        mapping[tag] = true
+    })
+    // 判断这个标签名是不是原生标签
+    return mapping[tagName]
 }

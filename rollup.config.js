@@ -17,7 +17,8 @@ export default {
             // openPage:'/public/index.html', // 默认打开html的路径 打开页面是谁
             // openPage:'/public/watch.html',
             // openPage: '/public/diff.html',
-            openPage: '/public/computed.html',
+            // openPage: '/public/computed.html',
+            openPage: '/public/component.html',
             port: 3000,  // 端口
             contentBase: ''
         }) : null

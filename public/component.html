@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+    </head>
+    <body>
+        <div id="app">
+            <my-component></my-component>
+            <my-component></my-component>
+            <my-component></my-component>
+        </div>
+        <script src="/dist/umd/vue.js"></script>
+        <!-- 为什么要拆分成小的组件 1.实现复用 2.方便维护 3.编写组件能拆分尽量拆分 vue的更新问题 
+        每个组件一个watcher 可以减少对比-->
+
+        <script>
+            // 内部会调用 Vue.extend 返回一个组件的构造函数， 通过new 这个构造函数产生实例
+            Vue.component("my-component", {
+                template: "<div>hello 你好</div>",
+            })
+
+            let vm = new Vue({
+                el: "#app",
+                components: {
+                    "my-component": {
+                        template: "<div>hello 不好 <aa></aa> </div>",
+                        created() {
+                            console.log("created component")
+                        },
+                        mounted() {
+                            console.log("mounted component")
+                        },
+                        components: {
+                            aa: {
+                                template: "<div>world</div>",
+                                created() {
+                                    console.log("created aa")
+                                },
+                                mounted() {
+                                    console.log("mounted aa")
+                                },
+                            },
+                        },
+                    },
+                },
+            })
+            // 组件的合并策略 就近策略 把全局组件放在原型链上
+            // #app里面的my-component是当前局部组件components内的"<div>hello 不好  <aa></aa></div>"
+            // <aa></aa>是"my-component里面的子组件"<div>world</div>"
+            // 全局组件"<div>hello 你好</div>"在局部组件"<div>hello 不好  <aa></aa></div>"的原型链上,通过__proto__可查到局部组件的原型对象 就能找到这个全局组件
+            // 页面渲染结果为
+            // hello不好
+            // world
+            // hello不好
+            // world
+            // hello不好
+            // world
+
+            // 组件的渲染顺序为 父组件created -> 子组件created -> 子组件mounted -> 父组件mounted
+            // created component
+            // created aa
+            // mounted aa
+            // mounted component
+            // created component
+            // created aa
+            // mounted aa
+            // mounted component
+            // created component
+            // created aa
+            // mounted aa
+            // mounted component
+
+            console.log(vm) //合并父子组件的components属性 通过原型链来查找
+            // 组件有可能是一个对象 还有可能是一个构造函数 组件的属性中多了一个hook属性 并且包含着组件的初始化方法
+
+            // 组件渲染的时候 会调用当前组件对应的构造函数 ，产生一个实例
+            // 我们可以new 这个类  每个组件调用都会new一下
+
+            // 每个组件在使用时都会调用Vue.extend方法 创建一个构造函数
+            // 实例化子组件时 会将当前选项和用户定义选项合并 mergeOptions
+            // 通过创建实例 内部会调用子类的_init() 内部会再创建一个渲染watcher 将渲染后的结果放到 vm.$el上 = 组件的渲染结果
+        </script>
+    </body>
+</html>

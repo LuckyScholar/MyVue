@@ -263,10 +263,30 @@ function updateChildren(oldChildren, newChildren, parent) {
 
 }
 
+function createComponent(vnode) { // 初始化的作用
+    // 需要创建组件的实例
+    let i = vnode.data;
+    if ((i = i.hook) && (i = i.init)) {
+        i(vnode);
+    }
+
+    // 执行完毕后 
+    if (vnode.componentInstance) {
+        return true;
+    }
+}
+
 // 根据虚拟节点创建真实的节点
 export function createElm(vnode) {
     let { tag, children, key, data, text } = vnode
-    if (typeof tag === 'string') {
+    // 是标签就创建标签
+    if (typeof tag === 'string') { // 创建元素放在vnode.el上
+        // 如果是组件
+        if (createComponent(vnode)) {   // 组件渲染后的结果 放在当前组件实例上 vm.$el
+            // 这里应该返回的是真实的dom元素 组件对应的dom元素
+            return vnode.componentInstance.$el;
+        }
+
         vnode.el = document.createElement(tag)
         updateProperties(vnode)
         children.forEach(child => {
